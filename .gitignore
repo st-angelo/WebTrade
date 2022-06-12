@@ -1,0 +1,6 @@
+# Visual Studio 2022
+.vs
+
+# .NET compiled files
+bin
+obj
