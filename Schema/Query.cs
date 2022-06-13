@@ -15,6 +15,11 @@ public class Query
         return await _tradeRepository.GetPortfolios();
     }
 
+    public async Task<IEnumerable<UserDto>> GetUsers([Service] IUserService _userService)
+    {
+        return await _userService.GetAll();
+    }
+
     public async Task<IEnumerable<SecurityDto>> GetSecurities([Service] ISecurityService _securityService)
     {
         return await _securityService.GetAll();

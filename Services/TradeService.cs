@@ -7,12 +7,20 @@ namespace WebTrade.Services;
 
 public class TradeService : ITradeService
 {
-    private readonly IMapper _mapper;
     private readonly IWebTradeRepository _webTradeRepository;
+    private readonly ICacheRepository _cacheRepository;
+    private readonly ICacheService _cacheService;
+    private readonly IMapper _mapper;
 
-    public TradeService(IWebTradeRepository webTradeRepository, IMapper mapper)
+    public TradeService(
+        IWebTradeRepository webTradeRepository,
+        ICacheRepository cacheRepository, 
+        ICacheService cacheService,
+        IMapper mapper)
     {
         _webTradeRepository = webTradeRepository;
+        _cacheRepository = cacheRepository;
+        _cacheService = cacheService;
         _mapper = mapper;
     }
 
@@ -20,7 +28,7 @@ public class TradeService : ITradeService
     {
         try
         {
-            return _mapper.Map<IEnumerable<TradeDto>>(await _webTradeRepository.GetAllTrades(userId));
+            return _mapper.Map<IEnumerable<TradeDto>>(await _cacheRepository.GetTrades(userId));
         }
         catch(Exception ex)
         {
@@ -35,8 +43,8 @@ public class TradeService : ITradeService
         {
             List<PortfolioDto> portfolios = new();
 
-            IEnumerable<Trade> trades = await _webTradeRepository.GetAllTrades();
-            IEnumerable<User> users = await _webTradeRepository.GetAllUsers();
+            IEnumerable<Trade> trades = await _cacheRepository.GetTrades();
+            IEnumerable<User> users = await _cacheRepository.GetUsers();
 
             foreach(User user in users)
             {
@@ -45,8 +53,10 @@ public class TradeService : ITradeService
 
                 foreach(Trade trade in trades.Where(trade => trade.UserId == user.Id))
                 {
+                    Security security = await _cacheRepository.GetSecurity(trade.SecurityId);
+
                     purchaseValue += trade.Price * trade.Quantity;
-                    marketValue += trade.Security.MarketPrice * trade.Quantity;
+                    marketValue += security.MarketPrice * trade.Quantity;
                 }
 
                 portfolios.Add(new()
@@ -71,7 +81,7 @@ public class TradeService : ITradeService
     {
         try
         {
-            Security security = await _webTradeRepository.GetSecurity(input.SecurityId);
+            Security security = await _cacheRepository.GetSecurity(input.SecurityId);
             Trade newTrade = new()
             {
                 Price = security.MarketPrice,
@@ -79,7 +89,12 @@ public class TradeService : ITradeService
                 UserId = input.UserId,
                 SecurityId = input.SecurityId
             };
-            return _mapper.Map<TradeDto>(await _webTradeRepository.AddTrade(newTrade));
+
+            Trade trade = await _webTradeRepository.AddTrade(newTrade);
+
+            _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
+
+            return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)
         {
@@ -91,7 +106,11 @@ public class TradeService : ITradeService
     {
         try
         {
-            return _mapper.Map<TradeDto>(await _webTradeRepository.DeleteTrade(id));
+            Trade trade = await _webTradeRepository.DeleteTrade(id);
+
+            _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
+
+            return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)
         {

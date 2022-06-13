@@ -8,11 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 {
     var services = builder.Services;
     services.AddAutoMapper(typeof(MappingProfile).Assembly);
+    services.AddDistributedMemoryCache();
     services.AddTransient<IWebTradeRepository, WebTradeRepository>();
+    services.AddTransient<ICacheRepository, WebTradeRepository>();
     services.AddTransient<ITradeService, TradeService>();
+    services.AddTransient<IUserService, UserService>();
     services.AddTransient<ISecurityService, SecurityService>();
+    services.AddTransient<ICacheService, CacheService>();
+    services.Decorate<ICacheRepository, CacheRepository>();
     services.AddGraphQLServer()
             .RegisterService<ITradeService>()
+            .RegisterService<IUserService>()
             .RegisterService<ISecurityService>()
             .AddQueryType<Query>()
             .AddMutationType<Mutation>();

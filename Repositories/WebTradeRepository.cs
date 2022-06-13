@@ -2,7 +2,7 @@
 
 namespace WebTrade.Repositories;
 
-public class WebTradeRepository : IWebTradeRepository
+public class WebTradeRepository : IWebTradeRepository, ICacheRepository
 {
     #region Data
     private class MockDb
@@ -193,7 +193,7 @@ public class WebTradeRepository : IWebTradeRepository
     #endregion
 
     #region Trade
-    public async Task<IEnumerable<Trade>> GetAllTrades(Guid? userId)
+    public async Task<IEnumerable<Trade>> GetTrades(Guid? userId = null)
     {
         await Utils.SimulateDbQuery();
 
@@ -225,7 +225,7 @@ public class WebTradeRepository : IWebTradeRepository
     #endregion
 
     #region User
-    public async Task<IEnumerable<User>> GetAllUsers()
+    public async Task<IEnumerable<User>> GetUsers()
     {
         await Utils.SimulateDbQuery();
         return _db.Users;
@@ -239,7 +239,7 @@ public class WebTradeRepository : IWebTradeRepository
     #endregion
 
     #region Security
-    public async Task<IEnumerable<Security>> GetAllSecurities()
+    public async Task<IEnumerable<Security>> GetSecurities()
     {
         await Utils.SimulateDbQuery();
         return _db.Securities;

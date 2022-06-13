@@ -7,12 +7,16 @@ namespace WebTrade.Services;
 
 public class SecurityService : ISecurityService
 {
-    private readonly IMapper _mapper;
     private readonly IWebTradeRepository _webTradeRepository;
+    private readonly ICacheRepository _cacheRepository;
+    private readonly ICacheService _cacheService;
+    private readonly IMapper _mapper;
 
-    public SecurityService(IWebTradeRepository webTradeRepository, IMapper mapper)
+    public SecurityService(IWebTradeRepository webTradeRepository, ICacheRepository cacheRepository, ICacheService cacheService, IMapper mapper)
     {
         _webTradeRepository = webTradeRepository;
+        _cacheRepository = cacheRepository;
+        _cacheService = cacheService;
         _mapper = mapper;
     }
 
@@ -20,7 +24,7 @@ public class SecurityService : ISecurityService
     {
         try
         { 
-            return _mapper.Map<IEnumerable<SecurityDto>>(await _webTradeRepository.GetAllSecurities());
+            return _mapper.Map<IEnumerable<SecurityDto>>(await _cacheRepository.GetSecurities());
         }
         catch (Exception ex)
         {
@@ -33,14 +37,18 @@ public class SecurityService : ISecurityService
     {
         try
         {
-            Security security = await _webTradeRepository.GetSecurity(input.SecurityId);
+            Security security = await _cacheRepository.GetSecurity(input.SecurityId);
             Security updatedSecurity = new()
             {
                 Id = security.Id,
                 Code = security.Code,
                 MarketPrice = input.MarketPrice
             };
-            return _mapper.Map<SecurityDto>(await _webTradeRepository.UpdateSecurity(updatedSecurity));
+            await _webTradeRepository.UpdateSecurity(updatedSecurity);
+
+            _cacheService.InvalidateKeys(CacheKey.Securities, Utils.GetCachePrefix(CacheKey.Security, security.Id.ToString()));
+
+            return _mapper.Map<SecurityDto>(updatedSecurity);
         }
         catch (Exception ex)
         {
