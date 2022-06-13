@@ -1,0 +1,157 @@
+{
+	"info": {
+		"_postman_id": "68d07613-e174-4851-aa67-113a30257971",
+		"name": "WebTrade",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8582002"
+	},
+	"item": [
+		{
+			"name": "Trades",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  trades(userId: \"06a49934-115f-48c1-8f2e-103e728b941b\") {\r\n    securityCode\r\n    tradePrice\r\n    tradeQuantity\r\n    tradeDate\r\n    buyerName\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Trade",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n  addTrade(input: {\r\n    userId: \"06a49934-115f-48c1-8f2e-103e728b941b\",\r\n    securityId: \"3cd68abd-4f1d-4e8e-a72d-85b17c3972ab\",\r\n    quantity: 5\r\n  }) {\r\n    tradeId\r\n    securityCode\r\n    tradePrice\r\n    tradeQuantity\r\n    tradeDate\r\n    buyerName\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Trade",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n    deleteTrade(id: \"d8e41ed9-8180-473e-8f75-8dc8d09fbf90\") {\r\n        tradeId\r\n        securityCode\r\n        tradePrice\r\n        tradeQuantity\r\n        tradeDate\r\n        buyerName\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Portfolios",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n    portfolios {\r\n        holderName\r\n        purchaseValue\r\n        marketValue\r\n        pL\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Users",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n    users {\r\n        id\r\n        name\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Securities",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n    securities {\r\n        id\r\n        code\r\n        marketPrice\r\n    }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Security",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n  updateSecurity(input: {\r\n    securityId: \"3cd68abd-4f1d-4e8e-a72d-85b17c3972ab\",\r\n    marketPrice: 139.9\r\n  }) {\r\n    id\r\n    code\r\n    marketPrice\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{URL}}",
+					"host": [
+						"{{URL}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

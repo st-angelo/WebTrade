@@ -195,30 +195,28 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     #region Trade
     public async Task<IEnumerable<Trade>> GetTrades(Guid? userId = null)
     {
-        await Utils.SimulateDbQuery();
+        await Utils.SimulateDbWorkload();
 
         return _db.Trades.Where(trade => !userId.HasValue || (userId.HasValue && trade.UserId == userId.Value))
                          .Select(trade => GetFullTrade(trade));
     }
 
-    public async Task<Trade> AddTrade(Trade trade)
+    public async Task<Trade> AddTrade(Trade input)
     {
-        await Utils.SimulateDbQuery();
+        await Utils.SimulateDbWorkload();
 
-        Trade newTrade = new(trade);
-        _db.Trades.Add(newTrade);
-
-        return GetFullTrade(newTrade);
+        Trade trade = input.DeepCopy();
+        trade.Id = Guid.NewGuid();
+        trade.Date = DateTime.Now;
+        _db.Trades.Add(trade);
+        return GetFullTrade(trade);
     }
 
     public async Task<Trade> DeleteTrade(Guid id)
     {
-        await Utils.SimulateDbQuery();
+        await Utils.SimulateDbWorkload();
 
-        Trade trade = _db.Trades.FirstOrDefault(trade => trade.Id == id);
-        if (trade == null)
-            throw new Exception($"Trade with Id {id} was not found!");
-
+        Trade trade = GetEntity(_db.Trades, id);
         _db.Trades.Remove(trade);
         return GetFullTrade(trade);
     }
@@ -227,40 +225,42 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     #region User
     public async Task<IEnumerable<User>> GetUsers()
     {
-        await Utils.SimulateDbQuery();
-        return _db.Users;
+        await Utils.SimulateDbWorkload();
+
+        return _db.Users.Select(user => user.DeepCopy());
     }
 
     public async Task<User> GetUser(Guid id)
     {
-        await Utils.SimulateDbQuery();
-        return _db.Users.FirstOrDefault(user => user.Id == id);
+        await Utils.SimulateDbWorkload();
+
+        User user = GetEntity(_db.Users, id);
+        return user.DeepCopy();
     }
     #endregion
 
     #region Security
     public async Task<IEnumerable<Security>> GetSecurities()
     {
-        await Utils.SimulateDbQuery();
-        return _db.Securities;
+        await Utils.SimulateDbWorkload();
+
+        return _db.Securities.Select(security => security.DeepCopy());
     }
     public async Task<Security> GetSecurity(Guid id)
     {
-        await Utils.SimulateDbQuery();
-        return _db.Securities.FirstOrDefault(security => security.Id == id);
+        await Utils.SimulateDbWorkload();
+
+        Security security = GetEntity(_db.Securities, id);
+        return security.DeepCopy();
     }
 
-    public async Task<Security> UpdateSecurity(Security security)
+    public async Task<Security> UpdateSecurity(Security input)
     {
-        await Utils.SimulateDbQuery();
+        await Utils.SimulateDbWorkload();
 
-        int idx = _db.Securities.FindIndex(sec => sec.Id == security.Id);
-        if (idx == -1)
-            throw new Exception($"Security with Id {security.Id} was not found!");
-
-        _db.Securities[idx] = security;
-
-        return security;
+        Security security = GetEntity(_db.Securities, input.Id);
+        security.MarketPrice = input.MarketPrice;
+        return security.DeepCopy();
     }
     #endregion
 
@@ -270,10 +270,21 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     {
         // Get a copy of a trade, not the "database" entity
         Trade copy = trade.DeepCopy();
+
         // Include related entities
-        copy.User = _db.Users.FirstOrDefault(user => user.Id == trade.UserId);
-        copy.Security = _db.Securities.FirstOrDefault(security => security.Id == trade.SecurityId);
+        copy.User = GetEntity(_db.Users, trade.UserId).DeepCopy();
+        copy.Security = GetEntity(_db.Securities, trade.SecurityId).DeepCopy();
+
         return copy;
+    }
+
+    private static T GetEntity<T>(List<T> collection, Guid id) where T : BaseEntity
+    {
+        T entity = collection.FirstOrDefault(entity => entity.Id == id);
+        if (entity == null)
+            throw new Exception($"{typeof(T).Name} with Id {id} was not found!");
+
+        return entity;
     }
 
     #endregion

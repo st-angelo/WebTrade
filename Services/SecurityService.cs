@@ -11,13 +11,20 @@ public class SecurityService : ISecurityService
     private readonly ICacheRepository _cacheRepository;
     private readonly ICacheService _cacheService;
     private readonly IMapper _mapper;
+    private readonly ILogger<SecurityService> _logger;
 
-    public SecurityService(IWebTradeRepository webTradeRepository, ICacheRepository cacheRepository, ICacheService cacheService, IMapper mapper)
+    public SecurityService(
+        IWebTradeRepository webTradeRepository, 
+        ICacheRepository cacheRepository, 
+        ICacheService cacheService, 
+        IMapper mapper, 
+        ILogger<SecurityService> logger)
     {
         _webTradeRepository = webTradeRepository;
         _cacheRepository = cacheRepository;
         _cacheService = cacheService;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<SecurityDto>> GetAll()
@@ -28,8 +35,8 @@ public class SecurityService : ISecurityService
         }
         catch (Exception ex)
         {
-            // TODO implement handling/logging
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 
@@ -37,23 +44,14 @@ public class SecurityService : ISecurityService
     {
         try
         {
-            Security security = await _cacheRepository.GetSecurity(input.SecurityId);
-            Security updatedSecurity = new()
-            {
-                Id = security.Id,
-                Code = security.Code,
-                MarketPrice = input.MarketPrice
-            };
-            await _webTradeRepository.UpdateSecurity(updatedSecurity);
-
+            Security security = await _webTradeRepository.UpdateSecurity(_mapper.Map<Security>(input));
             _cacheService.InvalidateKeys(CacheKey.Securities, Utils.GetCachePrefix(CacheKey.Security, security.Id.ToString()));
-
-            return _mapper.Map<SecurityDto>(updatedSecurity);
+            return _mapper.Map<SecurityDto>(security);
         }
         catch (Exception ex)
         {
-            // TODO implement handling/logging
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 }

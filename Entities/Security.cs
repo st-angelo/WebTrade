@@ -1,8 +1,7 @@
 ﻿namespace WebTrade.Entities;
 
-public class Security
+public class Security : BaseEntity
 {
-    public Guid Id { get; init; }
-    public string Code { get; init; }
-    public decimal MarketPrice { get; init; }
+    public string Code { get; set; }
+    public decimal MarketPrice { get; set; }
 }

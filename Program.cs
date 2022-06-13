@@ -4,11 +4,14 @@ using WebTrade.Schema;
 using WebTrade.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 {
     var services = builder.Services;
     services.AddAutoMapper(typeof(MappingProfile).Assembly);
     services.AddDistributedMemoryCache();
+    services.AddLogging();
     services.AddTransient<IWebTradeRepository, WebTradeRepository>();
     services.AddTransient<ICacheRepository, WebTradeRepository>();
     services.AddTransient<ITradeService, TradeService>();
@@ -20,6 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
             .RegisterService<ITradeService>()
             .RegisterService<IUserService>()
             .RegisterService<ISecurityService>()
+            .AddErrorFilter<GraphQLErrorFilter>()
             .AddQueryType<Query>()
             .AddMutationType<Mutation>();
 }

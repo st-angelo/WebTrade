@@ -11,17 +11,20 @@ public class TradeService : ITradeService
     private readonly ICacheRepository _cacheRepository;
     private readonly ICacheService _cacheService;
     private readonly IMapper _mapper;
+    private readonly ILogger<TradeService> _logger;
 
     public TradeService(
         IWebTradeRepository webTradeRepository,
         ICacheRepository cacheRepository, 
         ICacheService cacheService,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<TradeService> logger)
     {
         _webTradeRepository = webTradeRepository;
         _cacheRepository = cacheRepository;
         _cacheService = cacheService;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<TradeDto>> GetAll(Guid? userId)
@@ -32,8 +35,8 @@ public class TradeService : ITradeService
         }
         catch(Exception ex)
         {
-            // TODO implement handling/logging
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 
@@ -72,8 +75,8 @@ public class TradeService : ITradeService
         }
         catch (Exception ex)
         {
-            // TODO implement handling/logging
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 
@@ -82,23 +85,16 @@ public class TradeService : ITradeService
         try
         {
             Security security = await _cacheRepository.GetSecurity(input.SecurityId);
-            Trade newTrade = new()
-            {
-                Price = security.MarketPrice,
-                Quantity = input.Quantity,
-                UserId = input.UserId,
-                SecurityId = input.SecurityId
-            };
-
+            Trade newTrade = _mapper.Map<Trade>(input, opt => { opt.Items["Price"] = security.MarketPrice; });
             Trade trade = await _webTradeRepository.AddTrade(newTrade);
-
+            // Invalidate cache
             _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
-
             return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)
         {
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 
@@ -107,15 +103,14 @@ public class TradeService : ITradeService
         try
         {
             Trade trade = await _webTradeRepository.DeleteTrade(id);
-
+            // Invalidate cache
             _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
-
             return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)
         {
-            // TODO implement handling/logging
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
+            throw;
         }
     }
 }

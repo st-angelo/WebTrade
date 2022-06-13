@@ -8,13 +8,16 @@ namespace WebTrade.Services
     {
         private readonly ICacheRepository _cacheRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<UserService> _logger;
 
         public UserService(
             ICacheRepository cacheRepository,
-            IMapper mapper)
+            IMapper mapper,
+            ILogger<UserService> logger)
         {
             _cacheRepository = cacheRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<UserDto>> GetAll()
@@ -25,8 +28,8 @@ namespace WebTrade.Services
             }
             catch (Exception ex)
             {
-                // TODO implement handling/logging
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
+                throw;
             }
         }
     }

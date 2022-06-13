@@ -1,7 +1,6 @@
 ﻿namespace WebTrade.Entities;
 
-public class User
+public class User : BaseEntity
 {
-    public Guid Id { get; init; }
-    public string Name { get; init; }
+    public string Name { get; set; }
 }

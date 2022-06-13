@@ -17,5 +17,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.BuyerName, src => src.MapFrom(x => x.User.Name));
         CreateMap<Security, SecurityDto>();
         CreateMap<User, UserDto>();
+
+        CreateMap<AddTradeDto, Trade>()
+            .ForMember(dest => dest.Price, src => src.MapFrom((_, _, _, context) => context.Items["Price"]));
+        CreateMap<UpdateSecurityDto, Security>()
+            .ForMember(dest => dest.Id, src => src.MapFrom(x => x.SecurityId));
     }
 }
