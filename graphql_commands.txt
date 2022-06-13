@@ -1,0 +1,87 @@
+﻿# GET TRADES
+
+{
+  trades {
+    securityCode
+    tradePrice
+    tradeQuantity
+    tradeDate
+    buyerName
+  }
+}
+
+# GET TRADES FOR A USER
+
+{
+  trades(userId: "06a49934-115f-48c1-8f2e-103e728b941b") {
+    tradeId
+    securityCode
+    tradePrice
+    tradeQuantity
+    tradeDate
+  }
+}
+
+# ADD A TRADE
+
+mutation {
+  addTrade(input: {
+    userId: "06a49934-115f-48c1-8f2e-103e728b941b",
+    securityId: "3cd68abd-4f1d-4e8e-a72d-85b17c3972ab",
+    quantity: 5.5
+  }) {
+    tradeId
+    securityCode
+    tradePrice
+    tradeQuantity
+    tradeDate
+    buyerName
+  }
+}
+
+# DELETE A TRADE
+
+mutation {
+    deleteTrade(id: "ex. Id from Add trade") {
+        tradeId
+        securityCode
+        tradePrice
+        tradeQuantity
+        tradeDate
+        buyerName
+    }
+}
+
+# GET PORTFOLIOS
+
+{
+    portfolios {
+        holderName
+        purchaseValue
+        marketValue
+        pL
+    }
+}
+
+# GET SECURITIES
+
+{
+    securities {
+        id
+        code
+        marketPrice
+    }
+}
+
+# UPDATE SECURITY
+
+mutation {
+  updateSecurity(input: {
+    securityId: "7be85834-71d1-4f2f-896e-ddd74531a8d9",
+    marketPrice: 39.2
+  }) {
+    id
+    code
+    marketPrice
+  }
+}
