@@ -11,7 +11,7 @@ public static class Utils
         await Task.Delay(random.Next(300, 601));
     }
 
-    public static string GetCachePrefix(string prefix, string id = null) => $"{prefix}{(!string.IsNullOrWhiteSpace(id) ? $"_{id}" : string.Empty)}";
+    public static string GetCachePrefix(string prefix, string identifier = null) => $"{prefix}{(!string.IsNullOrWhiteSpace(identifier) ? $"_{identifier}" : string.Empty)}";
 
     #region Extension methods
     public static async Task SetAsync<T>(this IDistributedCache distributedCache, string key, T value, DistributedCacheEntryOptions options, CancellationToken token = default) where T : class
@@ -24,6 +24,12 @@ public static class Utils
     {
         string result = await distributedCache.GetStringAsync(key, token);
         return result == null ? null : JsonConvert.DeserializeObject<T>(result);
+    }
+
+    public static void Deconstruct(this string[] array, out string key, out string value)
+    {
+        key = array.Length > 0 ? array[0] : default;
+        value = array.Length > 1 ? array[1] : default;
     }
 
     public static T DeepCopy<T>(this T self)

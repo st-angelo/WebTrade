@@ -39,6 +39,21 @@ namespace WebTrade.Services
             }
         }
 
+        public void InvalidateByPatterns(params string[] patterns)
+        {
+            lock (_keys)
+            {
+                foreach (string _key in _keys.Keys)
+                {
+                    if (patterns.All(pattern => _key.Contains(pattern)))
+                    {
+                        _cache.Remove(_key);
+                        _keys.Remove(_key, out string _);
+                    }
+                }
+            }
+        }
+
         public void Reset()
         {
             lock (_keys)

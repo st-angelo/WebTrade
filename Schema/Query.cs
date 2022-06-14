@@ -5,9 +5,9 @@ namespace WebTrade.Schema;
 
 public class Query
 {
-    public async Task<IEnumerable<TradeDto>> GetTrades([Service] ITradeService _tradeRepository, Guid? userId)
+    public async Task<IEnumerable<TradeDto>> GetTrades([Service] ITradeService _tradeRepository, TradesFilterDto filters)
     {
-        return await _tradeRepository.GetAll(userId);
+        return await _tradeRepository.GetAll(filters);
     }
 
     public async Task<IEnumerable<PortfolioDto>> GetPortfolios([Service] ITradeService _tradeRepository)

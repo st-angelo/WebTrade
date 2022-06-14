@@ -14,28 +14,28 @@ public class CacheRepository : ICacheRepository
         _cache = cache;
     }
 
-    public async Task<IEnumerable<Trade>> GetTrades(Guid? userId = null)
+    public async Task<IEnumerable<Trade>> GetTrades(string filters = null)
     {
-        var _key = Utils.GetCachePrefix(CacheKey.Trades, userId.ToString());
+        var _key = Utils.GetCachePrefix(CacheKey.Trades, filters);
         IEnumerable<Trade> result = await _cache.GetAsync<IEnumerable<Trade>>(_key);
 
         if (result == null)
         {
-            result = await _inner.GetTrades(userId);
+            result = await _inner.GetTrades(filters);
             await _cache.SetAsync(_key, result);
         }
 
         return result;
     }
 
-    public async Task<IEnumerable<User>> GetUsers()
+    public async Task<IEnumerable<User>> GetUsers(string filters = null)
     {
         var _key = Utils.GetCachePrefix(CacheKey.Users);
         IEnumerable<User> result = await _cache.GetAsync<IEnumerable<User>>(_key);
 
         if (result == null)
         {
-            result = await _inner.GetUsers();
+            result = await _inner.GetUsers(filters);
             await _cache.SetAsync(_key, result);
         }
 
@@ -56,14 +56,14 @@ public class CacheRepository : ICacheRepository
         return result;
     }
 
-    public async Task<IEnumerable<Security>> GetSecurities()
+    public async Task<IEnumerable<Security>> GetSecurities(string filters = null)
     {
         var _key = Utils.GetCachePrefix(CacheKey.Securities);
         IEnumerable<Security> result = await _cache.GetAsync<IEnumerable<Security>>(_key);
 
         if (result == null)
         {
-            result = await _inner.GetSecurities();
+            result = await _inner.GetSecurities(filters);
             await _cache.SetAsync(_key, result);
         }
 

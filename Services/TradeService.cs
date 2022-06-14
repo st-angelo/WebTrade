@@ -27,11 +27,13 @@ public class TradeService : ITradeService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<TradeDto>> GetAll(Guid? userId)
+    public async Task<IEnumerable<TradeDto>> GetAll(TradesFilterDto filters)
     {
         try
         {
-            return _mapper.Map<IEnumerable<TradeDto>>(await _cacheRepository.GetTrades(userId));
+            string filtersString = string.Empty;
+            if (filters != null && filters.UserId.HasValue) filtersString += $"UserId={filters.UserId.Value}&";
+            return _mapper.Map<IEnumerable<TradeDto>>(await _cacheRepository.GetTrades(filtersString));
         }
         catch(Exception ex)
         {
@@ -88,7 +90,7 @@ public class TradeService : ITradeService
             Trade newTrade = _mapper.Map<Trade>(input, opt => { opt.Items["Price"] = security.MarketPrice; });
             Trade trade = await _webTradeRepository.AddTrade(newTrade);
             // Invalidate cache
-            _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
+            _cacheService.InvalidateByPatterns(CacheKey.Trades);
             return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)
@@ -104,7 +106,7 @@ public class TradeService : ITradeService
         {
             Trade trade = await _webTradeRepository.DeleteTrade(id);
             // Invalidate cache
-            _cacheService.InvalidateKeys(CacheKey.Trades, Utils.GetCachePrefix(CacheKey.Trades, trade.UserId.ToString()));
+            _cacheService.InvalidateByPatterns(CacheKey.Trades);
             return _mapper.Map<TradeDto>(trade);
         }
         catch (Exception ex)

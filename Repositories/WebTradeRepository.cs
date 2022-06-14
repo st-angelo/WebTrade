@@ -1,4 +1,5 @@
-﻿using WebTrade.Entities;
+﻿using System.Reflection;
+using WebTrade.Entities;
 
 namespace WebTrade.Repositories;
 
@@ -193,11 +194,11 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     #endregion
 
     #region Trade
-    public async Task<IEnumerable<Trade>> GetTrades(Guid? userId = null)
+    public async Task<IEnumerable<Trade>> GetTrades(string filters = null)
     {
         await Utils.SimulateDbWorkload();
 
-        return _db.Trades.Where(trade => !userId.HasValue || (userId.HasValue && trade.UserId == userId.Value))
+        return _db.Trades.Where(trade => ApplyFilters(trade, filters))
                          .Select(trade => GetFullTrade(trade));
     }
 
@@ -223,11 +224,12 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     #endregion
 
     #region User
-    public async Task<IEnumerable<User>> GetUsers()
+    public async Task<IEnumerable<User>> GetUsers(string filters = null)
     {
         await Utils.SimulateDbWorkload();
 
-        return _db.Users.Select(user => user.DeepCopy());
+        return _db.Users.Where(user => ApplyFilters(user, filters))
+                        .Select(user => user.DeepCopy());
     }
 
     public async Task<User> GetUser(Guid id)
@@ -240,11 +242,12 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
     #endregion
 
     #region Security
-    public async Task<IEnumerable<Security>> GetSecurities()
+    public async Task<IEnumerable<Security>> GetSecurities(string filters = null)
     {
         await Utils.SimulateDbWorkload();
 
-        return _db.Securities.Select(security => security.DeepCopy());
+        return _db.Securities.Where(security => ApplyFilters(security, filters))
+                             .Select(security => security.DeepCopy());
     }
     public async Task<Security> GetSecurity(Guid id)
     {
@@ -285,6 +288,25 @@ public class WebTradeRepository : IWebTradeRepository, ICacheRepository
             throw new Exception($"{typeof(T).Name} with Id {id} was not found!");
 
         return entity;
+    }
+
+    private static bool ApplyFilters<T>(T entity, string filters)
+    {
+        if (string.IsNullOrWhiteSpace(filters))
+            return true;
+
+        string[] filterFragments = filters.Trim('&').Split('&');
+        foreach(string fragment in filterFragments)
+        {
+            var (filterProperty, filterValue) = fragment.Split('=', 2);
+            PropertyInfo property = typeof(T).GetProperty(filterProperty);
+            if (property == null) continue;
+            string value = property.GetValue(entity, null).ToString();
+            if (value != filterValue)
+                return false;
+        }
+
+        return true;
     }
 
     #endregion
