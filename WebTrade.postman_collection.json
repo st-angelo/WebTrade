@@ -32,6 +32,13 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  trades(filters: { userId: \"06a49934-115f-48c1-8f2e-103e728b941b\" }) {\r\n    securityCode\r\n    tradePrice\r\n    tradeQuantity\r\n    tradeDate\r\n    buyerName\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
 				"url": {
 					"raw": "{{URL}}",
 					"host": [
@@ -70,7 +77,7 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation {\r\n    deleteTrade(id: \"1066562e-991d-441b-b130-8f089a67c8c7\") {\r\n        tradeId\r\n        securityCode\r\n        tradePrice\r\n        tradeQuantity\r\n        tradeDate\r\n        buyerName\r\n    }\r\n}",
+						"query": "mutation {\r\n    deleteTrade(id: \"1066562e-991d-441b-b130-8f089a67c8c9\") {\r\n        tradeId\r\n        securityCode\r\n        tradePrice\r\n        tradeQuantity\r\n        tradeDate\r\n        buyerName\r\n    }\r\n}",
 						"variables": ""
 					}
 				},
